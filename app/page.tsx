@@ -1,31 +1,88 @@
+import Link from "next/link";
+
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow">
-        <h1 className="mb-4 text-center text-2xl font-semibold">
-          Kreative Kindle
-        </h1>
+    <main className="min-h-screen bg-gray-100">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-purple-500 to-purple-700 px-6 py-20 text-white">
+        <div className="mx-auto max-w-5xl text-center">
+          <h1 className="mb-4 text-4xl font-bold">
+            Kreative Kindle
+          </h1>
+          <p className="mb-8 text-lg text-purple-100">
+            A creative learning platform designed to inspire young minds
+            through engaging courses and activities.
+          </p>
 
-        <p className="mb-6 text-center text-gray-600">
-          A creative learning platform for early childhood education.
+          <div className="flex justify-center gap-4">
+            <Link
+              href="/login"
+              className="rounded-lg bg-white px-6 py-3 font-medium text-purple-600 hover:bg-purple-100"
+            >
+              Login
+            </Link>
+
+            <Link
+              href="/register"
+              className="rounded-lg border border-white px-6 py-3 font-medium hover:bg-white hover:text-purple-600"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="mx-auto max-w-5xl px-6 py-16">
+        <h2 className="mb-10 text-center text-2xl font-semibold text-gray-800">
+          Why Kreative Kindle?
+        </h2>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-xl bg-white p-6 shadow-sm">
+            <h3 className="mb-2 text-lg font-medium">🎨 Creative Learning</h3>
+            <p className="text-sm text-gray-600">
+              Courses designed to boost creativity, imagination, and confidence.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-6 shadow-sm">
+            <h3 className="mb-2 text-lg font-medium">📚 Interactive Content</h3>
+            <p className="text-sm text-gray-600">
+              Learn through stories, activities, and engaging exercises.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-6 shadow-sm">
+            <h3 className="mb-2 text-lg font-medium">👩‍🏫 Expert Guidance</h3>
+            <p className="text-sm text-gray-600">
+              Content curated by educators and creative professionals.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="bg-white py-16 text-center">
+        <h2 className="mb-4 text-2xl font-semibold text-gray-800">
+          Ready to get started?
+        </h2>
+        <p className="mb-6 text-gray-600">
+          Join Kreative Kindle today and begin your creative journey.
         </p>
 
-        <div className="flex gap-4">
-          <a
-            href="/login"
-            className="w-full rounded-lg bg-purple-500 py-2 text-center text-white"
-          >
-            Login
-          </a>
+        <Link
+          href="/register"
+          className="rounded-lg bg-purple-500 px-6 py-3 text-white hover:bg-purple-600"
+        >
+          Create an Account
+        </Link>
+      </section>
 
-          <a
-            href="/register"
-            className="w-full rounded-lg border border-purple-500 py-2 text-center text-purple-500"
-          >
-            Register
-          </a>
-        </div>
-      </div>
+      {/* Footer */}
+      <footer className="bg-gray-900 py-6 text-center text-sm text-gray-400">
+        © 2025 Kreative Kindle. All rights reserved.
+      </footer>
     </main>
   );
 }
