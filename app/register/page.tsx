@@ -12,6 +12,8 @@ const schema = z
     address: z.string().min(5, "Address is required"),
     password: z.string().min(6, "Minimum 6 characters"),
     confirmPassword: z.string().min(6),
+    
+    
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -173,7 +175,7 @@ export default function RegisterPage() {
           className="w-full rounded-lg border border-gray-300 py-2 text-gray-700 hover:bg-gray-50"
           onClick={() => alert("Google login coming soon")}
         >
-          🔵 Continue with Google
+          Continue with Google Account 
         </button>
       </div>
     </main>
