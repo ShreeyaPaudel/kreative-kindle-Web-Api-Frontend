@@ -1,15 +1,8 @@
 import axios from "axios";
-import Cookies from "js-cookie";
 
 const api = axios.create({
-  baseURL: "http://localhost:3001",
-  withCredentials: true,
-});
-
-api.interceptors.request.use((config) => {
-  const token = Cookies.get("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+  baseURL: "http://localhost:3001", // ✅ backend port
+  headers: { "Content-Type": "application/json" },
 });
 
 export default api;
