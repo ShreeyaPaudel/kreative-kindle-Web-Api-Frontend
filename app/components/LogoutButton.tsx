@@ -8,7 +8,7 @@ export default function LogoutButton({ className = "" }: { className?: string })
 
   const handleLogout = () => {
     clearAuth();
-    router.push("/auth/login");
+    router.replace("/auth/login");
     router.refresh();
   };
 

@@ -22,11 +22,22 @@ export function middleware(req: NextRequest) {
   const userRaw = req.cookies.get("user")?.value;
   const user = parseUserCookie(userRaw);
 
+  // ✅ protect /dashboard
+  if (pathname.startsWith("/dashboard")) {
+    if (!token) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/auth/login";
+      url.searchParams.set("from", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
   // ✅ protect /user
   if (pathname.startsWith("/user")) {
     if (!token) {
       const url = req.nextUrl.clone();
       url.pathname = "/auth/login";
+      url.searchParams.set("from", pathname);
       return NextResponse.redirect(url);
     }
   }
@@ -36,9 +47,11 @@ export function middleware(req: NextRequest) {
     if (!token) {
       const url = req.nextUrl.clone();
       url.pathname = "/auth/login";
+      url.searchParams.set("from", pathname);
       return NextResponse.redirect(url);
     }
 
+    // If user cookie missing or not admin → unauthorized
     if (!user || user.role !== "admin") {
       const url = req.nextUrl.clone();
       url.pathname = "/unauthorized";
@@ -50,5 +63,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/user/:path*"],
+  matcher: ["/admin/:path*", "/user/:path*", "/dashboard/:path*"],
 };

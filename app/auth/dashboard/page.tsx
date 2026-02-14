@@ -1,7 +1,15 @@
 import LogoutButton from "../../components/LogoutButton";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) redirect("/auth/login");
   return (
     <main className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
