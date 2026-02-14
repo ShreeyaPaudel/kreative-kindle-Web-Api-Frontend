@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import DeleteButton from "./DeleteButton";
+
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -170,7 +172,7 @@ export default async function AdminUsersPage() {
                           </Link>
 
                           {/* Delete comes next (needs client confirm + API call) */}
-                          <span className="text-gray-400">(Delete next)</span>
+                          <DeleteButton userId={id} />
                         </div>
                       </td>
                     </tr>
