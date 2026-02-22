@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import DeleteButton from "./DeleteButton";
-
+import LimitSelect from "./LimitSelect";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,6 +16,15 @@ type AnyUser = {
   role?: string;
 };
 
+type Meta = {
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  hasPrevPage?: boolean;
+};
+
 function normalizeUsers(payload: any): AnyUser[] {
   if (Array.isArray(payload)) return payload;
 
@@ -26,11 +35,17 @@ function normalizeUsers(payload: any): AnyUser[] {
   return [];
 }
 
-async function fetchAdminUsers(token: string) {
+function normalizeMeta(payload: any): Meta {
+  if (payload?.meta) return payload.meta;
+  if (payload?.pagination) return payload.pagination;
+  return {};
+}
+
+async function fetchAdminUsers(token: string, page: number, limit: number) {
   const base = process.env.NEXT_PUBLIC_API_URL;
   if (!base) throw new Error("NEXT_PUBLIC_API_URL is missing in .env.local");
 
-  const res = await fetch(`${base}/api/admin/users`, {
+  const res = await fetch(`${base}/api/admin/users?page=${page}&limit=${limit}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -58,21 +73,31 @@ async function fetchAdminUsers(token: string) {
   return data;
 }
 
-export default async function AdminUsersPage() {
-  const store = await cookies();
-  const token = store.get("token")?.value;
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string; limit?: string }>;
+}) {
+  const sp = (await searchParams) ?? {};
+const cookieStore = await cookies();
+const token = cookieStore.get("token")?.value;
 
   if (!token) redirect("/auth/login");
 
+  // ✅ read from URL: /admin/users?page=2&limit=5
+ const page = Math.max(parseInt(sp.page ?? "1", 10) || 1, 1);
+const limit = Math.max(parseInt(sp.limit ?? "5", 10) || 5, 1);
+
   let payload: any;
   try {
-    payload = await fetchAdminUsers(token);
+    payload = await fetchAdminUsers(token, page, limit);
   } catch (e: any) {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
+          
             <Link
               href="/auth/dashboard"
               className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
@@ -95,39 +120,51 @@ export default async function AdminUsersPage() {
   }
 
   const users = normalizeUsers(payload);
+  const meta = normalizeMeta(payload);
+
+  const total = meta.total ?? users.length;
+  const totalPages = meta.totalPages ?? 1;
+ const hasPrevPage = page > 1;
+const hasNextPage = page < totalPages;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
-            <p className="text-sm text-gray-600">
-              View users, open details, and edit.
-            </p>
-          </div>
+<div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
+    <p className="text-sm text-gray-600">
+      View users, open details, and edit.
+    </p>
+  </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/auth/dashboard"
-              className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-            >
-              Back to Dashboard
-            </Link>
-          </div>
-        </div>
+  <div className="flex items-center gap-4">
+    <LimitSelect />
+
+    <Link
+      href="/auth/dashboard"
+      className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+    >
+      Back to Dashboard
+    </Link>
+  </div>
+</div>
 
         {/* Table Card */}
         <div className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              Total:{" "}
-              <span className="font-semibold text-gray-900">{users.length}</span>
+              Total: <span className="font-semibold text-gray-900">{total}</span>
+              <span className="ml-3 text-gray-400">
+                (Page {page} of {totalPages})
+              </span>
             </p>
             <p className="text-xs text-gray-500">
               Endpoint:{" "}
-              <span className="font-mono">{"/api/admin/users"}</span>
+              <span className="font-mono">
+                {`/api/admin/users?page=${page}&limit=${limit}`}
+              </span>
             </p>
           </div>
 
@@ -170,8 +207,6 @@ export default async function AdminUsersPage() {
                           >
                             Edit
                           </Link>
-
-                          {/* Delete comes next (needs client confirm + API call) */}
                           <DeleteButton userId={id} />
                         </div>
                       </td>
@@ -185,19 +220,47 @@ export default async function AdminUsersPage() {
                       className="px-6 py-10 text-center text-sm text-gray-500"
                       colSpan={4}
                     >
-                      No users found (or response structure didn’t contain a user
-                      array).
+                      No users found.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          {/* ✅ Pagination Controls */}
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <Link
+             href={`/admin/users?page=${Math.max(page - 1, 1)}&limit=${limit}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm ${
+                hasPrevPage
+                  ? "bg-white text-gray-700 hover:bg-gray-50"
+                  : "bg-gray-100 text-gray-400 pointer-events-none"
+              }`}
+            >
+              Previous
+            </Link>
+
+            <div className="text-sm text-gray-600">
+              Page <span className="font-semibold text-gray-900">{page}</span> of{" "}
+              <span className="font-semibold text-gray-900">{totalPages}</span>
+            </div>
+
+            <Link
+              href={`/admin/users?page=${Math.min(page + 1, totalPages)}&limit=${limit}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm ${
+                hasNextPage
+                  ? "bg-white text-gray-700 hover:bg-gray-50"
+                  : "bg-gray-100 text-gray-400 pointer-events-none"
+              }`}
+            >
+              Next
+            </Link>
+          </div>
         </div>
 
         <p className="mt-4 text-xs text-gray-500">
-          Next: Add Delete button with confirmation + backend pagination + UI
-          pagination.
+          Pagination is now wired to backend meta (page/limit/totalPages).
         </p>
       </div>
     </div>
