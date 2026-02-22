@@ -35,7 +35,11 @@ export default function LoginPage() {
       saveAuth(res.token, res.user);
 
       alert("Login successful!");
-      router.push("/auth/dashboard");
+      if (res.user?.role === "admin") {
+  router.push("/admin/users");
+} else {
+  router.push("/auth/dashboard");
+}
     } catch (error: any) {
       alert(error?.response?.data?.message || "Login failed");
     }
