@@ -10,6 +10,17 @@ export default async function DashboardPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
+  const userCookie = cookieStore.get("user")?.value;
+
+let role: string | null = null;
+
+if (userCookie) {
+  try {
+    const parsed = JSON.parse(userCookie);
+    role = parsed.role;
+  } catch {}
+}
+
   if (!token) {
     redirect("/auth/login");
   }
@@ -35,12 +46,14 @@ export default async function DashboardPage() {
               >
                 Dashboard
               </Link>
-              <Link
-                href="/admin/users"
-                className="text-gray-600 hover:text-gray-900 font-medium text-sm"
-              >
-                Admin
-              </Link>
+             {role === "admin" && (
+  <Link
+    href="/admin/users"
+    className="text-gray-600 hover:text-gray-900 font-medium text-sm"
+  >
+    Admin
+  </Link>
+)}
               <Link
                 href="/user/profile"
                 className="text-gray-600 hover:text-gray-900 font-medium text-sm"
