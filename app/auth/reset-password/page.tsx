@@ -7,9 +7,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Lock, ArrowRight } from "lucide-react";
+import { Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 
-import { resetPassword } from "@/lib/authApi"; 
+import { resetPassword } from "@/lib/authApi";
 import { requestPasswordReset } from "@/lib/authApi";
 
 const schema = z
@@ -28,11 +28,12 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ token comes from URL: /auth/reset-password?token=xxxx
   const token = useMemo(() => searchParams.get("token") ?? "", [searchParams]);
 
   const [serverMsg, setServerMsg] = useState<string>("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -53,13 +54,9 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      // ✅ Backend expects: { token, password }
       const res = await resetPassword({ token, password: data.password });
-
       setStatus("success");
       setServerMsg(res?.message || "Password reset successful.");
-
-      // ✅ redirect only on success
       setTimeout(() => router.replace("/auth/login"), 1200);
     } catch (error: any) {
       setStatus("error");
@@ -69,7 +66,6 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="min-h-screen w-full bg-[#f7f5f2] flex items-center justify-center px-4 py-10">
-      {/* ✅ single smooth animation only (container) */}
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
@@ -80,7 +76,6 @@ export default function ResetPasswordPage() {
         <div className="relative w-[42%] sm:w-1/2 flex-shrink-0 bg-gradient-to-br from-[#fde8d8] via-[#fce4ec] to-[#e8d5f5] flex items-center justify-center overflow-hidden">
           <div className="pointer-events-none absolute -top-12 -left-12 w-56 h-56 rounded-full bg-pink-200/40 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-orange-200/50 blur-2xl" />
-
           <div className="relative z-10 w-full flex items-center justify-center p-8 sm:p-12">
             <img
               src="/images/loginRe.png"
@@ -103,6 +98,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
               {/* New Password */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
@@ -111,12 +107,19 @@ export default function ResetPasswordPage() {
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...register("password")}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-11 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-rose-400 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="text-xs text-red-400 pl-1">{errors.password.message}</p>
@@ -131,12 +134,19 @@ export default function ResetPasswordPage() {
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     {...register("confirmPassword")}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-11 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-rose-400 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                 {errors.confirmPassword && (
                   <p className="text-xs text-red-400 pl-1">{errors.confirmPassword.message}</p>
@@ -150,7 +160,7 @@ export default function ResetPasswordPage() {
                 className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-orange-400 text-white py-3.5 text-sm font-semibold shadow-md shadow-rose-200 hover:shadow-lg hover:shadow-rose-200 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Updating..." : "Update password"}
-                <ArrowRight className="w-4 h-4" />
+                {!isSubmitting && <ArrowRight className="w-4 h-4" />}
               </button>
 
               {/* Status */}

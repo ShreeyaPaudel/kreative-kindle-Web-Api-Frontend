@@ -5,11 +5,12 @@ import { saveAuth } from "@/lib/authCookies";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 const schema = z.object({
   email: z.string().email("Enter valid email"),
@@ -20,6 +21,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -47,7 +49,6 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen w-full bg-[#f7f5f2] flex items-center justify-center px-4 py-10">
 
-      {/* SINGLE ANIMATION ONLY HERE */}
       <motion.div
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,11 +58,12 @@ export default function LoginPage() {
 
         {/* IMAGE PANEL */}
         <div className="relative w-[48%] flex-shrink-0 bg-gradient-to-br from-[#fde8d8] via-[#fce4ec] to-[#e8d5f5] flex items-center justify-center overflow-hidden">
-
+          <div className="pointer-events-none absolute -top-12 -left-12 w-56 h-56 rounded-full bg-pink-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-orange-200/50 blur-2xl" />
           <img
             src="/images/loginRe.png"
             alt="Login Illustration"
-            className="w-full max-w-[340px] md:max-w-[380px] lg:max-w-[420px] object-contain drop-shadow-2xl"
+            className="w-full max-w-[340px] md:max-w-[380px] lg:max-w-[420px] object-contain drop-shadow-2xl relative z-10"
           />
         </div>
 
@@ -98,9 +100,7 @@ export default function LoginPage() {
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs text-red-400 pl-1">
-                    {errors.email.message}
-                  </p>
+                  <p className="text-xs text-red-400 pl-1">{errors.email.message}</p>
                 )}
               </div>
 
@@ -117,22 +117,25 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-
                 <div className="relative">
                   <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     {...register("password")}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-11 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all duration-200"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-rose-400 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-
                 {errors.password && (
-                  <p className="text-xs text-red-400 pl-1">
-                    {errors.password.message}
-                  </p>
+                  <p className="text-xs text-red-400 pl-1">{errors.password.message}</p>
                 )}
               </div>
 
