@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 const ACTIVITIES: Record<number, {
   id: number; title: string; category: string; age: string;
@@ -85,7 +85,7 @@ const ACTIVITIES: Record<number, {
   5: {
     id: 5, title: "Nature Collage", category: "Art", age: "Age 3–6",
     image: "/images/activity1.png", duration: "35 mins",
-    desc: "Collect leaves, petals and twigs outdoors to create a stunning nature collage. Connects children with nature and builds creativity.",
+    desc: "Collect leaves, petals and twigs outdoors to create a stunning nature collage.",
     materials: [
       { label: "Collected leaves, petals, twigs", emoji: "🍃" },
       { label: "Thick paper or cardboard", emoji: "📄" },
@@ -107,10 +107,10 @@ const ACTIVITIES: Record<number, {
     materials: [
       { label: "Baking soda (3 tbsp)", emoji: "🧂" },
       { label: "White vinegar (½ cup)", emoji: "🍶" },
-      { label: "Dish soap (a few drops)", emoji: "🫧" },
+      { label: "Dish soap", emoji: "🫧" },
       { label: "Red food colouring", emoji: "🔴" },
       { label: "Small plastic bottle", emoji: "🍾" },
-      { label: "Clay for the volcano shape", emoji: "🏔️" },
+      { label: "Clay", emoji: "🏔️" },
     ],
     steps: [
       { text: "Build a volcano shape around a small plastic bottle using clay.", emoji: "🏔️" },
@@ -123,7 +123,7 @@ const ACTIVITIES: Record<number, {
   7: {
     id: 7, title: "Shape Painting", category: "Art", age: "Age 2–5",
     image: "/images/activity3.png", duration: "20 mins",
-    desc: "Explore shapes by dipping objects in paint and stamping patterns. A sensory-rich activity that teaches shapes and colours.",
+    desc: "Explore shapes by dipping objects in paint and stamping patterns on paper.",
     materials: [
       { label: "Poster paint (various colours)", emoji: "🎨" },
       { label: "White paper", emoji: "📄" },
@@ -141,7 +141,7 @@ const ACTIVITIES: Record<number, {
   8: {
     id: 8, title: "Number Puzzles", category: "Math", age: "Age 4–7",
     image: "/images/activity4.png", duration: "25 mins",
-    desc: "Solve fun number puzzles and match quantities to numerals. Strengthens number sense and problem-solving skills.",
+    desc: "Solve fun number puzzles and match quantities to numerals with colourful cards.",
     materials: [
       { label: "Printed number cards 1–10", emoji: "🔢" },
       { label: "Small counters or buttons", emoji: "🔵" },
@@ -158,7 +158,7 @@ const ACTIVITIES: Record<number, {
   9: {
     id: 9, title: "Alphabet Hunt", category: "Reading", age: "Age 3–6",
     image: "/images/activity1.png", duration: "20 mins",
-    desc: "Search the room for objects that start with each letter. Makes letter learning active, fun and memorable.",
+    desc: "Search the room for objects that start with each letter of the alphabet.",
     materials: [
       { label: "Alphabet sheet or cards", emoji: "🔤" },
       { label: "Pencil to tick off found items", emoji: "✏️" },
@@ -180,17 +180,101 @@ const CATEGORY_STYLES: Record<string, { badge: string; bg: string }> = {
   Science: { badge: "bg-[#ede8fd] text-[#6d28d9]", bg: "bg-[#f5f0ff]" },
 };
 
-export default async function ActivityDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  if (!token) redirect("/auth/login");
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+}
 
-  const { id } = await params;
-  const activity = ACTIVITIES[Number(id)];
+const API = "http://localhost:3001";
+
+export default function ActivityDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = Number(params?.id);
+  const activity = ACTIVITIES[id];
+
+  const [isFav, setIsFav]           = useState(false);
+  const [isDone, setIsDone]         = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
+  const [doneLoading, setDoneLoading] = useState(false);
+  const [toast, setToast]           = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Check existing favourite + completion state on load
+  useEffect(() => {
+    const token = getCookie("token");
+    if (!token) { router.push("/auth/login"); return; }
+
+    const checkState = async () => {
+      try {
+        const [favRes, progRes] = await Promise.all([
+          fetch(`${API}/api/progress/favourites`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/progress`,            { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const favs  = await favRes.json();
+        const prog  = await progRes.json();
+        setIsFav(favs.some((f: any) => f.activityId === id));
+        setIsDone(prog.activities?.some((a: any) => a.activityId === id));
+      } catch {}
+    };
+    checkState();
+  }, [id]);
+
+  const toggleFavourite = async () => {
+    const token = getCookie("token");
+    if (!token || !activity) return;
+    setFavLoading(true);
+    try {
+      if (isFav) {
+        await fetch(`${API}/api/progress/favourites/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setIsFav(false);
+        showToast("Removed from favourites");
+      } else {
+        await fetch(`${API}/api/progress/favourites`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activityId:    activity.id,
+            activityTitle: activity.title,
+            category:      activity.category,
+            age:           activity.age,
+            image:         activity.image,
+          }),
+        });
+        setIsFav(true);
+        showToast("Saved to favourites ⭐");
+      }
+    } catch { showToast("Something went wrong"); }
+    setFavLoading(false);
+  };
+
+  const finishActivity = async () => {
+    const token = getCookie("token");
+    if (!token || !activity) return;
+    setDoneLoading(true);
+    try {
+      await fetch(`${API}/api/progress/complete`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          activityId:    activity.id,
+          activityTitle: activity.title,
+          category:      activity.category,
+        }),
+      });
+      setIsDone(true);
+      showToast("Activity marked as complete! 🎉");
+    } catch { showToast("Something went wrong"); }
+    setDoneLoading(false);
+  };
 
   if (!activity) {
     return (
@@ -212,6 +296,13 @@ export default async function ActivityDetailPage({
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">
+
+      {/* TOAST */}
+      {toast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-xs font-semibold px-5 py-3 rounded-xl shadow-lg">
+          {toast}
+        </div>
+      )}
 
       {/* NAVBAR */}
       <nav className="bg-white border-b border-gray-100 sticky top-0 z-30">
@@ -247,42 +338,42 @@ export default async function ActivityDetailPage({
         {/* HERO CARD */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-5">
           <div className="grid grid-cols-1 lg:grid-cols-2">
-
-            {/* Image */}
             <div className={`flex items-center justify-center min-h-[260px] lg:min-h-[340px] ${style.bg} p-10`}>
-              <img
-                src={activity.image}
-                alt={activity.title}
-                className="w-full max-w-[220px] object-contain drop-shadow-md"
-              />
+              <img src={activity.image} alt={activity.title}
+                className="w-full max-w-[220px] object-contain drop-shadow-md" />
             </div>
-
-            {/* Info — no Start button, just save + back */}
             <div className="p-8 sm:p-10 flex flex-col justify-center gap-4">
               <div className="flex flex-wrap gap-2">
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg ${style.badge}`}>{activity.category}</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-100 text-gray-500">{activity.age}</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg bg-gray-100 text-gray-500">⏱ {activity.duration}</span>
+                {isDone && (
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg bg-green-100 text-green-600">✓ Completed</span>
+                )}
               </div>
-
               <h1 className="text-3xl font-bold text-gray-800" style={{ fontFamily: "'Georgia', serif", fontStyle: "italic" }}>
                 {activity.title}
               </h1>
-
               <p className="text-sm text-gray-400 leading-relaxed">{activity.desc}</p>
 
-              {/* Just a save button — no Start, this IS the activity */}
-              <button className="self-start flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#faf8f5] border border-gray-200 text-gray-400 hover:text-rose-400 hover:border-rose-200 transition-colors text-xs font-semibold uppercase tracking-widest">
-                ♡ Save to Favourites
+              {/* Save to favourites */}
+              <button
+                onClick={toggleFavourite}
+                disabled={favLoading}
+                className={`self-start flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-semibold uppercase tracking-widest transition-colors ${
+                  isFav
+                    ? "bg-rose-50 border-rose-200 text-rose-400"
+                    : "bg-[#faf8f5] border-gray-200 text-gray-400 hover:text-rose-400 hover:border-rose-200"
+                }`}
+              >
+                {isFav ? "♥ Saved to Favourites" : "♡ Save to Favourites"}
               </button>
             </div>
           </div>
         </div>
 
         {/* MATERIALS + STEPS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-
-          {/* Materials */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-5">
               <span className="text-xl">🛒</span>
@@ -297,8 +388,6 @@ export default async function ActivityDetailPage({
               ))}
             </ul>
           </div>
-
-          {/* Steps */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-5">
               <span className="text-xl">📋</span>
@@ -318,7 +407,25 @@ export default async function ActivityDetailPage({
           </div>
         </div>
 
-        {/* BACK */}
+        {/* FINISH ACTIVITY BUTTON */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-gray-800">All done? 🎉</p>
+            <p className="text-xs text-gray-400 mt-0.5">Mark this activity as complete to track your progress.</p>
+          </div>
+          <button
+            onClick={finishActivity}
+            disabled={isDone || doneLoading}
+            className={`flex-shrink-0 px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
+              isDone
+                ? "bg-green-100 text-green-600 border border-green-200 cursor-default"
+                : "bg-gradient-to-r from-rose-400 to-orange-300 text-white hover:shadow-md"
+            }`}
+          >
+            {isDone ? "✓ Already Completed!" : doneLoading ? "Saving..." : "Finish Activity"}
+          </button>
+        </div>
+
         <Link href="/auth/dashboard/activities"
           className="inline-flex items-center gap-2 rounded-xl bg-white border border-gray-200 text-gray-400 px-5 py-2.5 text-xs font-semibold uppercase tracking-widest hover:border-rose-200 hover:text-rose-400 transition-colors">
           ← Back to Activities
