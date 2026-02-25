@@ -9,11 +9,11 @@ const ACTIVITIES = [
   { id: 2, title: "Counting Caterpillar",category: "Math",    age: "Age 4–7",  image: "/images/activity2.png", desc: "Build a caterpillar and practice counting with beads.",      btnColor: "bg-[#d8ede8] text-[#0f766e] hover:bg-[#c0e2da]" },
   { id: 3, title: "Story Time Fun",      category: "Reading", age: "Age 5–8",  image: "/images/activity3.png", desc: "Read along and answer fun questions about the story.",       btnColor: "bg-[#fce4ec] text-[#be185d] hover:bg-[#f9ccda]" },
   { id: 4, title: "Build a Robot",       category: "Science", age: "Age 6–10", image: "/images/activity4.png", desc: "Use recycled materials to build your very own robot.",        btnColor: "bg-[#ede8fd] text-[#6d28d9] hover:bg-[#ddd5fa]" },
-  { id: 5, title: "Nature Collage",      category: "Art",     age: "Age 3–6",  image: "/images/activity1.png", desc: "Collect leaves and flowers to make a beautiful collage.",   btnColor: "bg-[#fde8d8] text-[#b45309] hover:bg-[#f9d5b5]" },
-  { id: 6, title: "DIY Volcano",         category: "Science", age: "Age 5–9",  image: "/images/activity2.png", desc: "Make a baking soda volcano and watch it erupt!",            btnColor: "bg-[#ede8fd] text-[#6d28d9] hover:bg-[#ddd5fa]" },
-  { id: 7, title: "Shape Painting",      category: "Art",     age: "Age 2–5",  image: "/images/activity3.png", desc: "Explore shapes by stamping objects dipped in paint.",       btnColor: "bg-[#fde8d8] text-[#b45309] hover:bg-[#f9d5b5]" },
-  { id: 8, title: "Number Puzzles",      category: "Math",    age: "Age 4–7",  image: "/images/activity4.png", desc: "Match quantities to numerals with colourful cards.",         btnColor: "bg-[#d8ede8] text-[#0f766e] hover:bg-[#c0e2da]" },
-  { id: 9, title: "Alphabet Hunt",       category: "Reading", age: "Age 3–6",  image: "/images/activity1.png", desc: "Search for objects that start with each letter.",           btnColor: "bg-[#fce4ec] text-[#be185d] hover:bg-[#f9ccda]" },
+  { id: 5, title: "Nature Collage",      category: "Art",     age: "Age 3–6",  image: "/images/naturecollage.png", desc: "Collect leaves and flowers to make a beautiful collage.",   btnColor: "bg-[#fde8d8] text-[#b45309] hover:bg-[#f9d5b5]" },
+  { id: 6, title: "DIY Volcano",         category: "Science", age: "Age 5–9",  image: "/images/diyvolcano.png", desc: "Make a baking soda volcano and watch it erupt!",            btnColor: "bg-[#ede8fd] text-[#6d28d9] hover:bg-[#ddd5fa]" },
+  { id: 7, title: "Shape Painting",      category: "Art",     age: "Age 2–5",  image: "/images/shapepainting.png", desc: "Explore shapes by stamping objects dipped in paint.",       btnColor: "bg-[#fde8d8] text-[#b45309] hover:bg-[#f9d5b5]" },
+  { id: 8, title: "Number Puzzles",      category: "Math",    age: "Age 4–7",  image: "/images/numberpuzzle.png", desc: "Match quantities to numerals with colourful cards.",         btnColor: "bg-[#d8ede8] text-[#0f766e] hover:bg-[#c0e2da]" },
+  { id: 9, title: "Alphabet Hunt",       category: "Reading", age: "Age 3–6",  image: "/images/alphabethunt.png", desc: "Search for objects that start with each letter.",           btnColor: "bg-[#fce4ec] text-[#be185d] hover:bg-[#f9ccda]" },
 ];
 
 const CATEGORIES = ["All", "Art", "Math", "Reading", "Science"];
