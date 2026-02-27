@@ -134,11 +134,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="w-9 h-9 rounded-xl flex items-center justify-center relative transition-all hover:scale-105"
-                style={{ background: "rgba(251,146,60,.08)", border: "1px solid rgba(251,146,60,.15)" }}>
-                <span className="text-sm">🔔</span>
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "#f87171", border: "1.5px solid white" }} />
-              </button>
+            
               <Link href="/user/profile"
                 className="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 transition-all hover:scale-105"
                 style={{ borderColor: "#fcd9b6", boxShadow: "0 2px 12px rgba(251,146,60,.2)" }}>
@@ -150,8 +146,7 @@ export default function DashboardPage() {
                       </svg>
                     </div>}
               </Link>
-              <LogoutButton className="ff-b hidden sm:flex px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border-0 text-white"
-                style={{ background: "linear-gradient(135deg, #f87171, #fb923c)" }} />
+              <LogoutButton className="ff-b hidden sm:flex px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-white [background:linear-gradient(135deg,#f87171,#fb923c)]" />
             </div>
           </div>
           <div className="flex md:hidden gap-1 pb-2 overflow-x-auto">

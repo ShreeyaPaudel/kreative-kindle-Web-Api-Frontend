@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import DeleteButton from "../DeleteButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -8,144 +9,101 @@ export const revalidate = 0;
 async function fetchUserById(token: string, id: string) {
   const base = process.env.NEXT_PUBLIC_API_URL;
   if (!base) throw new Error("NEXT_PUBLIC_API_URL missing");
-
-  const res = await fetch(`${base}/api/admin/users/${id}`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
+  const res  = await fetch(`${base}/api/admin/users/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }, cache: "no-store",
   });
-
-  const text = await res.text();
-  let data: any = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-
-  if (!res.ok) {
-    throw new Error(
-      typeof data === "string" ? data : data?.message || "Failed to fetch user"
-    );
-  }
-
-  return data;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.message || "Failed to fetch user");
+  // API returns { user: {...} } — unwrap it
+  return data?.user ?? data;
 }
 
-export default async function AdminUserIdPage({
-  params,
-}: {
-  params: Promise<{ id: string }> | { id: string };
-}) {
-  // ✅ Next.js 15 safe: params can be Promise
-  const resolvedParams = await Promise.resolve(params);
-  const id = resolvedParams?.id;
+const ROLE_BADGE: Record<string, { bg: string; color: string }> = {
+  admin:  { bg: "#fde8d8", color: "#b45309" },
+  parent: { bg: "#f0fdf9", color: "#0f766e" },
+};
 
-  if (!id) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="mx-auto max-w-xl rounded-2xl bg-white p-6 shadow">
-          <h1 className="text-xl font-bold text-gray-900">User Details</h1>
-          <p className="mt-2 text-sm text-red-600">
-            Missing user id in route. (params.id is undefined)
-          </p>
-          <Link
-            href="/admin/users"
-            className="mt-4 inline-block text-blue-600 hover:underline"
-          >
-            Back to Users
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const store = await cookies();
-  const token = store.get("token")?.value;
+export default async function AdminUserIdPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const { id } = await Promise.resolve(params);
+  const store  = await cookies();
+  const token  = store.get("token")?.value;
   if (!token) redirect("/auth/login");
 
   let user: any;
-  try {
-    user = await fetchUserById(token, id);
-  } catch (e: any) {
+  try { user = await fetchUserById(token, id); }
+  catch (e: any) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="mx-auto max-w-xl rounded-2xl bg-white p-6 shadow">
-          <h1 className="text-xl font-bold text-gray-900">User Details</h1>
-          <p className="mt-2 text-sm text-red-600">
-            {e?.message || "Failed to load user"}
-          </p>
-          <Link
-            href="/admin/users"
-            className="mt-4 inline-block text-blue-600 hover:underline"
-          >
-            Back to Users
-          </Link>
-        </div>
+      <div className="rounded-2xl p-5 text-sm" style={{ background: "#fff5f5", border: "1px solid #fecaca", color: "#b91c1c" }}>
+        <p className="font-semibold mb-1">Could not load user</p>
+        <p>{e?.message}</p>
+        <Link href="/admin/users" className="mt-3 inline-block text-xs font-semibold" style={{ color: "#0f766e" }}>← Back to Users</Link>
       </div>
     );
   }
 
+  const name   = user.username || user.name || user.fullName || "—";
+  const role   = user.role || "parent";
+  const badge  = ROLE_BADGE[role] ?? { bg: "#f5f5f4", color: "#78716c" };
+
+  const fields = [
+    { label: "User ID",  value: user._id || id,    mono: true },
+    { label: "Username", value: name },
+    { label: "Email",    value: user.email || "—" },
+    { label: "Role",     value: role, badge: true },
+    { label: "Joined",   value: user.createdAt ? new Date(user.createdAt).toLocaleString() : "—" },
+    { label: "Updated",  value: user.updatedAt ? new Date(user.updatedAt).toLocaleString() : "—" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">User Details</h1>
-          <div className="flex gap-3">
-            <Link
-              href="/admin/users"
-              className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-            >
-              Back
-            </Link>
-            <Link
-              href={`/admin/users/${id}/edit`}
-              className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
-            >
-              Edit
-            </Link>
+    <div className="max-w-2xl">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs mb-6" style={{ color: "#a8a29e" }}>
+        <Link href="/admin/users" className="hover:opacity-70 transition-opacity" style={{ color: "#78716c" }}>Users</Link>
+        <span>›</span>
+        <span style={{ color: "#1c1917" }}>{name}</span>
+      </div>
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold"
+            style={{ background: badge.bg, color: badge.color }}>
+            {name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: "#1c1917" }}>{name}</h1>
+            <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md"
+              style={{ background: badge.bg, color: badge.color }}>{role}</span>
           </div>
         </div>
-
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <div className="grid gap-4">
-            <div>
-              <p className="text-xs uppercase text-gray-500">ID</p>
-              <p className="font-mono text-sm text-gray-800">{user._id || id}</p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase text-gray-500">Username / Name</p>
-              <p className="text-gray-900 font-medium">
-                {user.username || user.name || user.fullName || "—"}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase text-gray-500">Email</p>
-              <p className="text-gray-800">{user.email || "—"}</p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase text-gray-500">Role</p>
-              <p className="text-gray-800">{user.role || "parent"}</p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase text-gray-500">Created</p>
-              <p className="text-gray-800">
-                {user.createdAt ? new Date(user.createdAt).toLocaleString() : "—"}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase text-gray-500">Updated</p>
-              <p className="text-gray-800">
-                {user.updatedAt ? new Date(user.updatedAt).toLocaleString() : "—"}
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/users"
+            className="text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+            style={{ background: "white", border: "1px solid #ebe8e4", color: "#78716c" }}>
+            ← Back
+          </Link>
+          <Link href={`/admin/users/${id}/edit`}
+            className="text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+            style={{ background: "#fde8d8", color: "#b45309", border: "1px solid #fdd9b4" }}>
+            Edit
+          </Link>
+          <DeleteButton userId={id} />
         </div>
+      </div>
+
+      {/* Detail card */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid #ebe8e4" }}>
+        {fields.map((f, i) => (
+          <div key={f.label} className="flex items-start px-5 py-4"
+            style={{ borderTop: i === 0 ? "none" : "1px solid #f5f2ee" }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest w-28 flex-shrink-0 mt-0.5" style={{ color: "#a8a29e" }}>{f.label}</p>
+            {f.badge
+              ? <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg"
+                  style={{ background: badge.bg, color: badge.color }}>{f.value}</span>
+              : <p className={`text-sm ${f.mono ? "font-mono" : "font-medium"}`} style={{ color: f.mono ? "#78716c" : "#1c1917", wordBreak: "break-all" }}>{f.value}</p>
+            }
+          </div>
+        ))}
       </div>
     </div>
   );
