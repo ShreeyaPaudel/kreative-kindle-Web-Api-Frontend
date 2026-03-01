@@ -114,16 +114,18 @@ export default function DashboardPage() {
               </div>
             </Link>
 
+            {/* DESKTOP NAV */}
             <div className="hidden md:flex items-center gap-1">
               {[
-                { label: "Home",       href: "/auth/dashboard",            active: true,  emoji: "🏠" },
-                { label: "Activities", href: "/auth/dashboard/activities", active: false, emoji: "🎨" },
-                { label: "Updates",    href: "/auth/dashboard/updates",    active: false, emoji: "📢" },
+                { label: "Home",       href: "/auth/dashboard",            active: true,   },
+                { label: "Activities", href: "/auth/dashboard/activities", active: false,  },
+                { label: "Children",   href: "/auth/children",             active: false, },
+                { label: "Updates",    href: "/auth/dashboard/updates",    active: false,  },
               ].map((l) => (
                 <Link key={l.label} href={l.href}
                   className={`nav-link ${l.active ? "active" : ""} ff-b flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all`}
                   style={{ color: l.active ? "#e8703a" : "#a8a29e", background: l.active ? "rgba(251,146,60,.08)" : "transparent" }}>
-                  <span className="text-sm">{l.emoji}</span>{l.label}
+                  <span className="text-sm"></span>{l.label}
                 </Link>
               ))}
               {user?.role === "admin" && (
@@ -134,7 +136,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2">
-            
               <Link href="/user/profile"
                 className="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0 transition-all hover:scale-105"
                 style={{ borderColor: "#fcd9b6", boxShadow: "0 2px 12px rgba(251,146,60,.2)" }}>
@@ -149,10 +150,13 @@ export default function DashboardPage() {
               <LogoutButton className="ff-b hidden sm:flex px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-white [background:linear-gradient(135deg,#f87171,#fb923c)]" />
             </div>
           </div>
+
+          {/* MOBILE NAV */}
           <div className="flex md:hidden gap-1 pb-2 overflow-x-auto">
             {[
               { label: "Home",       href: "/auth/dashboard",            active: true  },
               { label: "Activities", href: "/auth/dashboard/activities", active: false },
+              { label: "Children",   href: "/auth/children",             active: false },
               { label: "Updates",    href: "/auth/dashboard/updates",    active: false },
             ].map((l) => (
               <Link key={l.label} href={l.href}
@@ -172,21 +176,16 @@ export default function DashboardPage() {
           border: "1px solid rgba(253,186,116,.4)", minHeight: 340,
           boxShadow: "0 8px 60px rgba(251,146,60,.08), inset 0 1px 0 rgba(255,255,255,.8)"
         }}>
-          {/* Blobs */}
           <div className="blob absolute pointer-events-none" style={{ top: -80, right: "5%", width: 320, height: 320, background: "radial-gradient(circle at 40% 40%, rgba(253,164,175,.4), rgba(251,146,60,.2))", filter: "blur(60px)", opacity: 0.7 }} />
           <div className="blob absolute pointer-events-none" style={{ bottom: -60, left: "8%", width: 260, height: 260, background: "radial-gradient(circle at 60% 60%, rgba(196,181,253,.5), rgba(129,140,248,.2))", filter: "blur(50px)", opacity: 0.5, animationDelay: "3s" }} />
           <div className="blob absolute pointer-events-none" style={{ top: "30%", left: -40, width: 200, height: 200, background: "radial-gradient(circle, rgba(110,231,183,.4), transparent)", filter: "blur(40px)", opacity: 0.5, animationDelay: "6s" }} />
-          {/* Spinning ring */}
           <div className="spin-slow absolute pointer-events-none" style={{ top: -60, right: "20%", width: 280, height: 280, borderRadius: "50%", border: "2px dashed rgba(251,146,60,.15)" }} />
           <div className="spin-slow absolute pointer-events-none" style={{ top: -40, right: "18%", width: 330, height: 330, borderRadius: "50%", border: "1px solid rgba(248,113,113,.08)", animationDirection: "reverse", animationDuration: "45s" }} />
-          {/* Floating emojis */}
           <div className="float-a absolute pointer-events-none text-4xl select-none" style={{ top: "12%", right: "38%", opacity: 0.18 }}>🎨</div>
           <div className="float-b absolute pointer-events-none text-3xl select-none" style={{ top: "65%", right: "6%", opacity: 0.13 }}>⭐</div>
           <div className="float-c absolute pointer-events-none text-2xl select-none" style={{ bottom: "18%", left: "44%", opacity: 0.18 }}>✏️</div>
           <div className="float-d absolute pointer-events-none text-3xl select-none" style={{ top: "8%", left: "40%", opacity: 0.13 }}>🌈</div>
-          {/* Dot grid */}
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(251,146,60,.12) 1px, transparent 1px)", backgroundSize: "24px 24px", opacity: 0.4 }} />
-          {/* Diagonal stripes */}
           <div className="absolute pointer-events-none" style={{ top: 0, right: 0, width: "40%", height: "100%", background: "repeating-linear-gradient(-45deg, rgba(251,146,60,.03) 0px, rgba(251,146,60,.03) 1px, transparent 1px, transparent 12px)" }} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 relative z-10">
@@ -218,7 +217,6 @@ export default function DashboardPage() {
                   📊 My Progress
                 </Link>
               </div>
-              {/* Mini stat pills */}
               <div className="flex gap-2 flex-wrap">
                 {[
                   { n: totalDone, label: "completed", color: "#f87171", bg: "rgba(248,113,113,.1)", border: "rgba(248,113,113,.2)" },
@@ -421,6 +419,7 @@ export default function DashboardPage() {
               {[
                 { label: "Dashboard",  href: "/auth/dashboard",            emoji: "🏠" },
                 { label: "Activities", href: "/auth/dashboard/activities", emoji: "🎨" },
+                { label: "Children",   href: "/auth/children",             emoji: "👶" },
                 { label: "Progress",   href: "/auth/dashboard/progress",   emoji: "📊" },
                 { label: "Favourites", href: "/auth/dashboard/favourites", emoji: "⭐" },
                 { label: "Updates",    href: "/auth/dashboard/updates",    emoji: "📢" },
