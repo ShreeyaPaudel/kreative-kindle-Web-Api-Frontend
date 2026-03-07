@@ -1,4 +1,15 @@
-export default function DashboardPage() {
+import LogoutButton from "../../components/LogoutButton";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) redirect("/auth/login");
   return (
     <main className="min-h-screen bg-gray-100 p-6">
       {/* Header */}
@@ -79,9 +90,8 @@ export default function DashboardPage() {
             <button className="rounded-lg border py-2 text-gray-700 hover:bg-gray-50">
               View Profile
             </button>
-            <button className="rounded-lg border py-2 text-gray-700 hover:bg-gray-50">
-              Logout
-            </button>
+           <LogoutButton className="border-0 bg-red-500 text-white hover:bg-red-600" />
+
           </div>
         </div>
       </section>
