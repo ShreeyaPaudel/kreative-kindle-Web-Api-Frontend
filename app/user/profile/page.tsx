@@ -172,8 +172,7 @@ export default function UserProfilePage() {
                 </Link>
               ))}
             </div>
-            <div className="flex items-center gap-2">
- 
+            <div className="flex items-center gap-2"> 
               <Link href="/user/profile"
                 className="w-9 h-9 rounded-full overflow-hidden border-2 flex-shrink-0"
                 style={{ borderColor: "#fcd9b6", boxShadow: "0 2px 12px rgba(251,146,60,.2)" }}>

@@ -4,18 +4,10 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#f5f0e8] overflow-x-hidden font-sans">
 
-      {/* ── NAVBAR ─────────────────────────────────────────────── */}
+     
       <nav className="relative z-20 flex items-center justify-between px-8 py-5 md:px-14">
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-12 h-12 rounded-xl bg-[#f5a623] flex items-center justify-center shadow-md">
-            <span className="text-2xl">📖</span>
-          </div>
-          <div className="leading-tight">
-            <p className="text-[11px] font-semibold text-[#e07b39] uppercase tracking-widest">Creative</p>
-            <p className="text-[11px] font-semibold text-[#e07b39] uppercase tracking-widest">Kindle</p>
-          </div>
-        </div>
+        
 
         {/* Nav links */}
         <div className="hidden md:flex items-center gap-10 text-sm font-medium text-gray-700">
@@ -32,7 +24,7 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* ── HERO ───────────────────────────────────────────────── */}
+     
       <section className="relative min-h-[88vh] flex items-center overflow-hidden">
 
         {/* Organic blob — top left teal */}

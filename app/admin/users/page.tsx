@@ -31,6 +31,7 @@ async function fetchAdminUsers(token: string, page: number, limit: number) {
   const text = await res.text();
   let data: any = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  if (res.status === 401 || res.status === 403) { redirect("/auth/login"); }
   if (!res.ok) throw new Error(typeof data === "string" ? data : data?.message || `Error ${res.status}`);
   return data;
 }

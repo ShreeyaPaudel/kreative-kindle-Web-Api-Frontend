@@ -45,8 +45,11 @@ export default function AdminActivitiesPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/activities`, {
       headers: { Authorization: `Bearer ${decodeURIComponent(token)}` },
     })
-      .then(r => r.json())
-      .then(d => setActivities(Array.isArray(d) ? d : []))
+      .then(async r => {
+        if (r.status === 401 || r.status === 403) { router.push("/auth/login"); return; }
+        const d = await r.json();
+        setActivities(Array.isArray(d) ? d : []);
+      })
       .catch(() => showToast("Failed to load activities", "error"))
       .finally(() => setLoading(false));
   }, []);
