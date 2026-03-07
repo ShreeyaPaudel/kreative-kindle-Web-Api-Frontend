@@ -22,7 +22,7 @@ export function middleware(req: NextRequest) {
   const userRaw = req.cookies.get("user")?.value;
   const user = parseUserCookie(userRaw);
 
-  // ✅ protect /dashboard
+
   if (pathname.startsWith("/dashboard")) {
     if (!token) {
       const url = req.nextUrl.clone();
@@ -32,7 +32,7 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ✅ protect /user
+
   if (pathname.startsWith("/user")) {
     if (!token) {
       const url = req.nextUrl.clone();
@@ -42,7 +42,7 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ✅ protect /admin
+
   if (pathname.startsWith("/admin")) {
     if (!token) {
       const url = req.nextUrl.clone();
@@ -51,7 +51,7 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // If user cookie missing or not admin → unauthorized
+
     if (!user || user.role !== "admin") {
       const url = req.nextUrl.clone();
       url.pathname = "/unauthorized";
