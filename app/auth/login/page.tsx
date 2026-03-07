@@ -1,5 +1,8 @@
 "use client";
 
+import { loginUser } from "@/lib/authApi";
+import { saveAuth } from "@/lib/authCookies";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -24,10 +27,18 @@ export default function LoginPage() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
-    alert("Login successful!");
-    router.push("/auth/dashboard");
+  const onSubmit = async (data: FormData) => {
+    try {
+      const res = await loginUser(data); // { email, password }
+
+      // save token + user in cookies
+      saveAuth(res.token, res.user);
+
+      alert("Login successful!");
+      router.push("/auth/dashboard");
+    } catch (error: any) {
+      alert(error?.response?.data?.message || "Login failed");
+    }
   };
 
   return (
@@ -83,9 +94,7 @@ export default function LoginPage() {
               />
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">
-                {errors.password.message}
-              </p>
+              <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
 

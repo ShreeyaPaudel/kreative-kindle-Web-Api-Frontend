@@ -17,14 +17,14 @@ export default function HomePage() {
 
           <div className="flex justify-center gap-4">
             <Link
-              href="/login"
+              href="/auth/login"
               className="rounded-lg bg-white px-6 py-3 font-medium text-purple-700 hover:bg-purple-100"
             >
               Login
             </Link>
 
             <Link
-              href="/register"
+              href="/auth/register"
               className="rounded-lg border border-white px-6 py-3 font-medium text-white hover:bg-white hover:text-purple-700"
             >
               Sign Up
